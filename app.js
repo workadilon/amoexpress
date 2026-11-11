@@ -479,8 +479,13 @@ async function v51AutoAssign(){
 async function v51Dispatch(){
  try{
   if(!state.admin)throw Error('Ação restrita à administração.');
-  const {data,error}=await db.functions.invoke('dispatch-integrations',{body:{source:'admin-panel'}});
-  if(error)throw error;
+  const {data,error}=await db.functions.invoke('outbox',{body:{source:'admin-panel'}});
+  if(error){
+   let detail=error.message||String(error);
+   try { if(error.context?.json){const info=await error.context.json();detail=info.error||info.message||detail} else if(error.context?.text){detail=await error.context.text()||detail} } catch(_){}
+   const status=error.context?.status;
+   throw Error(`Webhook (${status||'sem resposta'}): ${detail}. Confira a Edge Function outbox e seus Secrets.`);
+  }
   notify(`Integrações processadas: ${data?.sent||0} enviadas, ${data?.failed||0} falhas.`);
   await v51Load();render();
  }catch(e){err(e)}
