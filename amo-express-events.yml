@@ -1,0 +1,22 @@
+# Instale este arquivo no repositório GitHub de destino, na branch padrão.
+# O evento é enviado pelo Supabase Edge Function `outbox` via repository_dispatch.
+name: AMO Express - Eventos de entregas
+'on':
+  repository_dispatch:
+    types: [amo_express_delivery]
+permissions:
+  contents: read
+jobs:
+  receber-evento:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar e resumir evento (sem dados pessoais)
+        env:
+          EVENT_ID: ${{ github.event.client_payload.event_id }}
+          EVENT_KIND: ${{ github.event.client_payload.kind }}
+          DELIVERY_STATUS: ${{ github.event.client_payload.status }}
+        run: |
+          echo "Evento AMO Express recebido"
+          echo "ID: $EVENT_ID"
+          echo "Tipo: $EVENT_KIND"
+          echo "Status: $DELIVERY_STATUS"
