@@ -71,3 +71,14 @@
 .actions.compact{display:flex;gap:5px;flex-wrap:wrap;justify-content:end}
 .public-tracking .topbar{justify-content:flex-start}
 @media(max-width:420px){.track-steps{gap:2px}.track-step{font-size:10px}.track-step span{width:28px;height:28px}}
+/* AMO Express 5.1.3 — restauração segura, mantendo a identidade visual existente */
+.reset-entry{border:1px solid rgba(214,66,66,.26);background:linear-gradient(130deg,rgba(255,244,243,.9),rgba(255,255,255,.9))}
+.reset-danger{border:1px solid rgba(196,44,44,.35);background:linear-gradient(135deg,rgba(255,244,242,.96),rgba(255,255,255,.96))}
+.reset-danger h3,.reset-entry h3{color:#9e2828}
+.reset-count-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:12px 0 20px}
+.reset-count-grid .mini-row{border:1px solid rgba(139,157,179,.18);border-radius:12px;padding:10px 13px;background:var(--surface,#fff);margin:0}
+.reset-check{display:flex;align-items:flex-start;gap:12px;font-size:.91rem;line-height:1.5;padding:10px 0;color:var(--text,#1f3249)}
+.reset-check input{flex:none;width:20px;height:20px;margin-top:2px;accent-color:#b93535}
+.reset-danger .btn.danger,.reset-entry .btn.danger{background:#b72f36;color:#fff}
+.reset-danger .btn.danger:disabled{opacity:.5}
+@media(max-width:560px){.reset-count-grid{grid-template-columns:1fr}.reset-danger .actions{flex-wrap:wrap}}

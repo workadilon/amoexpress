@@ -49,7 +49,7 @@ function more(){return label('Mais opções','Relatórios, alertas e configuraç
 function driverName(id){return state.drivers.find(x=>x.user_id===id)?.name||'Não atribuído'}
 function drivers(){return label('Entregadores','Cadastre e distribua entregas.',button('+ Entregador','new-driver'))+section(`${state.drivers.length} cadastrado(s)`)+`<div class="list-stack">${state.drivers.map(d=>`<article class="item-card"><div class="item-avatar">🛵</div><div class="item-main"><strong>${esc(d.name)}</strong><small>${esc(d.phone||'Sem telefone')}</small><small>${d.active?'Ativo':'Inativo'} · ${state.deliveries.filter(x=>x.assigned_driver_id===d.user_id&& !['Concluída','Cancelada'].includes(x.status)).length} fretes abertos</small></div><button class="btn small subtle" data-act="driver-toggle" data-id="${esc(d.user_id)}">${d.active?'Desativar':'Ativar'}</button></article>`).join('')||empty('Nenhum entregador','Vincule uma conta já criada no Supabase Auth.')}</div>`}
 function notifications(){return label('Notificações','Avisos atualizados pelo servidor.',button('Marcar lidas','read-notices','','btn subtle small'))+`<div class="list-stack">${state.notices.map(n=>`<article class="item-card ${n.read_at?'':'unread'}"><div class="item-avatar amber">♧</div><div class="item-main"><strong>${esc(n.title)}</strong><small>${esc(n.body)}</small><small>${date(n.created_at)}</small></div>${n.read_at?'':button('✓','read-notice',n.id,'btn small soft')}</article>`).join('')||empty('Nenhum aviso novo')}</div>`}
-function settings(){let offline=state.offline?'Sem rede — dados em cache':'Conectado ao Supabase';return label('Configurações','Preferências e conectividade.')+`<div class="panel"><h3>Conexão</h3><p class="subtext">${offline}</p><p class="subtext">${pendingQueue().length} atualização(ões) aguardando envio</p><div class="actions">${button('Sincronizar agora','reload','','btn small')}${button('Monitor','tab','monitorV51','btn small subtle')}${button('Ativar avisos do navegador','browser-permission','','btn small subtle')}</div></div><div class="panel security-panel"><div class="security-heading"><span class="security-symbol" aria-hidden="true">🔐</span><div><h3>Segurança da conta</h3><p class="subtext">Altere sua senha de acesso com segurança.</p></div></div><div class="mini-row"><span>E-mail da conta</span><strong class="security-email">${esc(state.user?.email||'Não informado')}</strong></div><div class="actions">${button('Alterar minha senha','change-password','','btn small')}${button('Esqueci minha senha','reset-password','','btn small subtle')}</div></div><div class="panel"><h3>Dados e acesso</h3><p class="subtext">As informações consultadas recentemente ficam neste aparelho para leitura offline. Ao sair, o cache local é apagado.</p><div class="actions">${button('Limpar cache local','clear-cache','','btn small subtle')}${button('Sair da conta','signout','','btn small danger')}</div></div>`}
+function settings(){let offline=state.offline?'Sem rede — dados em cache':'Conectado ao Supabase';return label('Configurações','Preferências e conectividade.')+`<div class="panel"><h3>Conexão</h3><p class="subtext">${offline}</p><p class="subtext">${pendingQueue().length} atualização(ões) aguardando envio</p><div class="actions">${button('Sincronizar agora','reload','','btn small')}${button('Monitor','tab','monitorV51','btn small subtle')}${button('Ativar avisos do navegador','browser-permission','','btn small subtle')}</div></div><div class="panel security-panel"><div class="security-heading"><span class="security-symbol" aria-hidden="true">🔐</span><div><h3>Segurança da conta</h3><p class="subtext">Altere sua senha de acesso com segurança.</p></div></div><div class="mini-row"><span>E-mail da conta</span><strong class="security-email">${esc(state.user?.email||'Não informado')}</strong></div><div class="actions">${button('Alterar minha senha','change-password','','btn small')}${button('Esqueci minha senha','reset-password','','btn small subtle')}</div></div><div class="panel"><h3>Dados e acesso</h3><p class="subtext">As informações consultadas recentemente ficam neste aparelho para leitura offline. Ao sair, o cache local é apagado.</p><div class="actions">${button('Limpar cache local','clear-cache','','btn small subtle')}${button('Sair da conta','signout','','btn small danger')}</div></div>${state.admin?`<div class="panel reset-entry"><h3>⚠ Zona de perigo · Administrador</h3><p class="subtext">Restauração completa com inventário, backups obrigatórios, senha e confirmação dupla. Não remove contas Auth nem arquivos do Storage automaticamente.</p>${button('Abrir restauração segura','reset-open','','btn small danger')}</div>`:''}`}
 
 function changePasswordForm(){
   if(!db||!state.user?.email){notify('Entre na sua conta para alterar sua senha.',true);return}
@@ -107,7 +107,7 @@ async function sendPasswordReset(){
     notify('Solicitação enviada. Verifique seu e-mail e a pasta de spam.');
   }catch(error){err(error)}
 }
-function render(){if(!state.user)return;bootReady();$('context-label').textContent=state.driverMode?'Portal do entregador':state.admin?'Painel de administração':titleCompany(state.companyId);$('nav').classList.remove('hidden');$('logout').classList.remove('hidden');nav();const views={home,deliveries,clients,products,companies,rates,reports,drivers,notifications,settings,more,operations,logistics,auditView,financeV51:v51Finance,monitorV51:v51Monitor};$('app').innerHTML=(views[state.tab]||home)()}
+function render(){if(!state.user)return;bootReady();$('context-label').textContent=state.driverMode?'Portal do entregador':state.admin?'Painel de administração':titleCompany(state.companyId);$('nav').classList.remove('hidden');$('logout').classList.remove('hidden');nav();const views={home,deliveries,clients,products,companies,rates,reports,drivers,notifications,settings,more,operations,logistics,auditView,financeV51:v51Finance,monitorV51:v51Monitor,resetApp:amoResetView};$('app').innerHTML=(views[state.tab]||home)()}
 function hero(){let list=visibleDeliveries(),month=list.filter(thisMonth),pending=list.filter(x=>x.status==='Pendente');return `<div class="dashboard-hero"><div class="hero-overline">${state.driverMode?'SUAS ENTREGAS':state.admin?'CONTROLE DE OPERAÇÕES':'RESUMO DO SEU MÊS'}</div><div class="hero-number">${money(sum(month))}</div><div class="hero-caption">${state.driverMode?'Valor de entregas atribuídas no mês':state.admin?'Volume financeiro de fretes no mês':'Total em fretes neste mês'}</div><div class="hero-row"><span class="hero-chip">◉ ${month.length} fretes no mês</span><span class="hero-chip">◷ ${pending.length} pendentes</span>${state.admin||state.driverMode?'':button('+ Novo frete','new-delivery','','hero-button')}</div></div>`}
 function home(){const list=visibleDeliveries(),month=list.filter(thisMonth);let g=state.admin;return `<div class="eyebrow">OLÁ, BEM-VINDO 👋</div><h1>${g?'Visão geral':'Suas entregas'}</h1><p class="subtext" style="margin-bottom:21px">${g?'Veja como está a operação em tempo real.':'Tudo o que você precisa para gerenciar seus fretes.'}</p>${hero()}<div class="metric-grid">${metric('◫',g?'Empresas ativas':'Fretes no mês',g?state.company.filter(x=>x.status==='Ativa').length:month.length,g?'Empresas em operação':'Solicitações realizadas')}${metric('◷','Pendentes',list.filter(x=>x.status==='Pendente').length,'Aguardando atendimento','amber')}${metric('➜','Em trânsito',list.filter(x=>x.status==='Em trânsito').length,'A caminho do destino')}${metric('✓','Concluídas',list.filter(x=>x.status==='Concluída').length,'Entregas finalizadas','green')}</div>${section('Últimas solicitações',button('Ver todas →','tab','deliveries','muted-link'))}<div class="delivery-tiles">${list.length?list.slice(0,4).map(deliveryCard).join(''):empty('Nenhum frete registrado','Crie seu primeiro frete para começar.')}</div>`}
 function visibleDeliveries(){return state.driverMode?state.deliveries.filter(d=>d.assigned_driver_id===state.user?.id):own(state.deliveries)}
@@ -194,6 +194,7 @@ function enqueue(op){let arr=pendingQueue();if(!arr.some(x=>x.id===op.id&&x.stat
 async function flushQueue(){
  if(!navigator.onLine||!state.user||!pendingQueue().length)return;
  if(!(await requireAuthenticatedSession(state.user.id)))return;
+ await amoEnsureResetEpoch();
  let ops=pendingQueue();let failed=false;
  for(let i=0;i<ops.length;){
   const op=ops[i];
@@ -227,7 +228,7 @@ async function flushQueue(){
 function queueInsert(table,record){let ops=pendingQueue();ops.push({type:'insert',table,record,queued_at:new Date().toISOString()});localStorage.setItem(queueKey(),JSON.stringify(ops));state[table].unshift({...record,created_at:record.created_at||new Date().toISOString()});snapshot();notify('Registro salvo neste dispositivo. Será enviado ao reconectar.');close();render()}
 
 function snapshot(){let {company,members,clients,products,deliveries,rates,drivers,events,notices,admin,driver,companyId,locations,ratings,audit,settingsV5}=state;try{localStorage.setItem(cacheKey(),JSON.stringify({company,members,clients,products,deliveries,rates,drivers,events,notices,admin,driver,companyId,locations,ratings,audit,settingsV5,ts:Date.now()}))}catch(e){console.warn('Cache local cheio',e)}}
-async function load(){if(!state.user)return;if(state.loading){state.refreshPending=true;return;}const loadingUserId=state.user.id;state.loading=true;try{if(!(await requireAuthenticatedSession(loadingUserId)))return;$('sync').classList.remove('offline');$('sync-text').textContent='Atualizando';let [company,members,admins,clients,products,deliveries,rates,drivers,events,notices]=await withTimeout(Promise.all([q(db.from('companies').select('*').order('created_at',{ascending:false})),q(db.from('company_members').select('*').eq('user_id',state.user.id)),q(db.from('app_admins').select('user_id').eq('user_id',state.user.id)),q(db.from('clients').select('*').order('created_at',{ascending:false})),q(db.from('products').select('*').order('created_at',{ascending:false})),q(db.from('deliveries').select('*').order('created_at',{ascending:false})),q(db.from('neighborhood_rates').select('*').order('neighborhood')),q(db.from('drivers').select('*').order('name')),q(db.from('delivery_events').select('*').order('created_at',{ascending:false}).limit(500)),q(db.from('notifications').select('*').order('created_at',{ascending:false}).limit(100))]),15000,'A consulta ao Supabase demorou demais. Verifique a conexão e tente novamente.');for(const op of pendingQueue())if(op.type==='insert'&&['deliveries','clients','products'].includes(op.table)){
+async function load(){if(!state.user)return;if(state.loading){state.refreshPending=true;return;}const loadingUserId=state.user.id;state.loading=true;try{if(!(await requireAuthenticatedSession(loadingUserId)))return;await amoEnsureResetEpoch();$('sync').classList.remove('offline');$('sync-text').textContent='Atualizando';let [company,members,admins,clients,products,deliveries,rates,drivers,events,notices]=await withTimeout(Promise.all([q(db.from('companies').select('*').order('created_at',{ascending:false})),q(db.from('company_members').select('*').eq('user_id',state.user.id)),q(db.from('app_admins').select('user_id').eq('user_id',state.user.id)),q(db.from('clients').select('*').order('created_at',{ascending:false})),q(db.from('products').select('*').order('created_at',{ascending:false})),q(db.from('deliveries').select('*').order('created_at',{ascending:false})),q(db.from('neighborhood_rates').select('*').order('neighborhood')),q(db.from('drivers').select('*').order('name')),q(db.from('delivery_events').select('*').order('created_at',{ascending:false}).limit(500)),q(db.from('notifications').select('*').order('created_at',{ascending:false}).limit(100))]),15000,'A consulta ao Supabase demorou demais. Verifique a conexão e tente novamente.');for(const op of pendingQueue())if(op.type==='insert'&&['deliveries','clients','products'].includes(op.table)){
   const list={deliveries,clients,products}[op.table];if(!list.some(row=>row.id===op.record.id))list.unshift({...op.record,created_at:op.record.created_at||new Date().toISOString()});
  }let unseen=notices.filter(n=>!n.read_at&&!state.notices.some(old=>old.id===n.id));if(state.loadedOnce&&unseen.length&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='visible'){new Notification('AMO Express',{body:unseen[0].title+' · '+unseen[0].body,icon:'./icons/icon-192.png'})}if(state.user?.id!==loadingUserId)return;let driver=drivers.find(x=>x.user_id===state.user.id)||null;Object.assign(state,{company,members,admin:admins.length>0,clients,products,deliveries,rates,drivers,events,notices,driver,offline:false});if(!state.admin){let ids=members.map(x=>x.company_id);state.companyId=ids.includes(state.companyId)?state.companyId:ids[0]||null;state.driverMode=!state.companyId&&!!driver?.active;if(!state.companyId&&!state.driverMode){$('nav').classList.add('hidden');$('context-label').textContent='Aguardando acesso';$('app').innerHTML=`${label('Acesso pendente','Sua conta ainda não está vinculada a uma empresa nem cadastrada como entregador.')}<div class="panel"><h3>Falta apenas um passo</h3><p class="subtext">Peça ao administrador para vincular a conta <strong>${esc(state.user.email)}</strong>.</p><div style="margin-top:15px">${button('Verificar novamente','reload')}</div></div>`;$('sync-text').textContent='Conectado';bootReady();return}if(['companies','rates','drivers','clients','products'].includes(state.tab)&&state.driverMode)state.tab='home';if(['companies','rates','drivers'].includes(state.tab)&&!state.driverMode)state.tab='home'}else state.driverMode=false;if(!(await requireAuthenticatedSession(loadingUserId)))return;await flushQueue();if(!(await requireAuthenticatedSession(loadingUserId)))return;await loadExtras();if(state.user?.id!==loadingUserId)return;snapshot();state.loadedOnce=true;$('sync-text').textContent='Online';render()}catch(e){$('sync').classList.add('offline');$('sync-text').textContent='Offline';state.offline=true;try{let data=JSON.parse(localStorage.getItem(cacheKey())||'null');if(!data)throw Error('Sem cache');Object.assign(state,data);state.driverMode=!state.admin&&!state.companyId&&!!state.driver;render();notify('Sem conexão: exibindo últimos dados sincronizados.')}catch{$('app').innerHTML=`${empty('Não foi possível carregar',e?.message||'Conecte à internet para a primeira sincronização.')}<div style="margin-top:14px">${button('Tentar novamente','reload')}</div>`;bootReady();err(e)}}finally{state.loading=false;if(state.refreshPending){state.refreshPending=false;setTimeout(load,250)}}}
 
@@ -235,7 +236,7 @@ function subscribe(){
  if(!state.user)return;
  state.channel?.unsubscribe();
  const channel=db.channel('amo-live-'+state.user.id);
- for(const table of ['deliveries','notifications','driver_locations','delivery_stops']){
+ for(const table of ['deliveries','notifications','driver_locations','delivery_stops','amo_reset_state']){
   channel.on('postgres_changes',{event:'*',schema:'public',table},()=>scheduleRefresh());
  }
  state.channel=channel.subscribe(status=>{
@@ -244,13 +245,13 @@ function subscribe(){
  });
  if(!subscribe.visibleBound){subscribe.visibleBound=true;document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.user)load()},{passive:true})}
 }
-function login(message=''){bootReady();if(state.geoWatch!==null){navigator.geolocation?.clearWatch(state.geoWatch);state.geoWatch=null}state.channel?.unsubscribe();v51Reset();state.user=null;$('logout').classList.add('hidden');$('nav').classList.add('hidden');$('context-label').textContent='Sua entrega, sem complicação.';$('sync').classList.add('offline');$('sync-text').textContent='Acesso';$('app').innerHTML=`<div class="login-wrap"><div class="login-card"><div class="login-hero"><div class="login-circle">🛵</div><div class="eyebrow">BEM-VINDO AO AMO EXPRESS</div><h1>Entregas mais simples.</h1><p class="subtext">Tudo organizado, de onde você estiver.</p></div><div class="login-panel"><h2>Entre na sua conta</h2><p class="subtext">Acesse sua empresa ou o painel administrativo.</p>${message?`<div class="notice">${esc(message)}</div>`:''}<form id="login-form" class="form-stack">${fld('E-mail','email','','email')}${fld('Senha','password','','password')}<button class="btn block" type="submit">Entrar na plataforma →</button></form><button class="muted-link" data-act="forgot">Esqueci minha senha</button></div></div></div>`}
+function login(message=''){amoReset.prepared=null;amoReset.preview=null;bootReady();if(state.geoWatch!==null){navigator.geolocation?.clearWatch(state.geoWatch);state.geoWatch=null}state.channel?.unsubscribe();v51Reset();state.user=null;$('logout').classList.add('hidden');$('nav').classList.add('hidden');$('context-label').textContent='Sua entrega, sem complicação.';$('sync').classList.add('offline');$('sync-text').textContent='Acesso';$('app').innerHTML=`<div class="login-wrap"><div class="login-card"><div class="login-hero"><div class="login-circle">🛵</div><div class="eyebrow">BEM-VINDO AO AMO EXPRESS</div><h1>Entregas mais simples.</h1><p class="subtext">Tudo organizado, de onde você estiver.</p></div><div class="login-panel"><h2>Entre na sua conta</h2><p class="subtext">Acesse sua empresa ou o painel administrativo.</p>${message?`<div class="notice">${esc(message)}</div>`:''}<form id="login-form" class="form-stack">${fld('E-mail','email','','email')}${fld('Senha','password','','password')}<button class="btn block" type="submit">Entrar na plataforma →</button></form><button class="muted-link" data-act="forgot">Esqueci minha senha</button></div></div></div>`}
 function recovery(){bootReady();state.user=null;$('nav').classList.add('hidden');$('app').innerHTML=`<div class="login-wrap"><div class="login-card"><h2>Definir nova senha</h2><form id="recovery-form" class="form-stack">${fld('Nova senha (mínimo de 8 caracteres)','password','','password')}<button type="submit" class="btn">Alterar senha</button></form></div></div>`}
 
 async function init(){if(!db){login(!configured?'Preencha a URL e a chave pública no arquivo config.js para conectar o Supabase.':'Não foi possível carregar a biblioteca do Supabase. Verifique a conexão.');return}db.auth.onAuthStateChange((type,session)=>{if(type==='PASSWORD_RECOVERY'){recovery()}else if(type==='SIGNED_OUT'){state.channel?.unsubscribe();if(state.geoWatch!==null){navigator.geolocation?.clearWatch(state.geoWatch);state.geoWatch=null}v51Reset();login()}else if(type==='SIGNED_IN'&&session?.user&&state.user?.id!==session.user.id){state.user=session.user;state.tab='home';setTimeout(async()=>{await load();subscribe()},0)}});try{let {data,error}=await withTimeout(db.auth.getSession(),12000,'A recuperação da sessão demorou demais.');if(error)throw error;if(data?.session?.user){state.user=data.session.user;await load();subscribe()}else if(!state.user)login()}catch(e){console.error('Erro ao recuperar sessão',e);if(state.user){await load();subscribe();return}bootReady();$('sync-text').textContent='Falha ao iniciar';$('app').innerHTML=`${empty('Não foi possível iniciar',e?.message||'Falha ao recuperar a sessão.')}<div style="margin-top:14px"><button type="button" class="btn" onclick="location.reload()">Tentar novamente</button></div>`}}
 $('logout').addEventListener('click',async()=>{try{if(state.geoWatch!==null){navigator.geolocation.clearWatch(state.geoWatch);state.geoWatch=null}if(pendingQueue().length&&!confirm('Existem operações offline pendentes. Sair agora DESCARTARÁ essas alterações. Deseja continuar?'))return;
  localStorage.removeItem(cacheKey());localStorage.removeItem(queueKey());if(db)await db.auth.signOut();login()}catch(e){err(e)}});
-$('app').addEventListener('submit',async e=>{if(e.target.id==='recovery-form'){e.preventDefault();try{let password=e.target.elements.password.value;if(password.length<8)throw Error('Use pelo menos 8 caracteres.');await q(db.auth.updateUser({password}));notify('Senha alterada.');await load()}catch(ex){err(ex)}return}if(e.target.id!=='login-form')return;e.preventDefault();if(!db){notify('Configure o Supabase primeiro.',true);return}let v=fd(e.target),btn=e.target.querySelector('button');btn.disabled=true;try{let {data,error}=await db.auth.signInWithPassword({email:v.email.trim(),password:v.password});if(error)throw error;state.user=data.user;state.tab='home';await load();subscribe()}catch(e){err(e)}finally{btn.disabled=false}});
+$('app').addEventListener('submit',async e=>{if(e.target.id==='amo-reset-prepare'){e.preventDefault();await amoResetPrepare(e.target);return}if(e.target.id==='amo-reset-confirm'){e.preventDefault();await amoResetExecute(e.target);return}if(e.target.id==='recovery-form'){e.preventDefault();try{let password=e.target.elements.password.value;if(password.length<8)throw Error('Use pelo menos 8 caracteres.');await q(db.auth.updateUser({password}));notify('Senha alterada.');await load()}catch(ex){err(ex)}return}if(e.target.id!=='login-form')return;e.preventDefault();if(!db){notify('Configure o Supabase primeiro.',true);return}let v=fd(e.target),btn=e.target.querySelector('button');btn.disabled=true;try{let {data,error}=await db.auth.signInWithPassword({email:v.email.trim(),password:v.password});if(error)throw error;state.user=data.user;state.tab='home';await load();subscribe()}catch(e){err(e)}finally{btn.disabled=false}});
 $('modal').addEventListener('click',e=>{if(e.target===$('modal'))close()});$('modal').addEventListener('change',e=>{if(e.target.matches('[data-password-toggle]')){const form=e.target.closest('form');if(form?.dataset.kind==='change-password')form.querySelectorAll('input[name$="_password"]').forEach(input=>input.type=e.target.checked?'text':'password')}});$('modal').addEventListener('submit',e=>{if(e.target.id==='data-form'){e.preventDefault();if(e.target.dataset.kind==='change-password')savePassword(e.target);else save(e.target)}});
 function searchResults(){let list=filteredDeliveries();if($('delivery-results'))$('delivery-results').innerHTML=list.length?list.map(deliveryCard).join(''):empty('Nenhum frete encontrado','Experimente alterar a busca ou os filtros.')}
 
@@ -269,7 +270,7 @@ document.addEventListener('click',async e=>{let el=e.target.closest('[data-act]'
  case'auto-assign':await v51AutoAssign();break;
  case'queue-retry':await flushQueue();await load();break;
  case'queue-discard':{const ops=pendingQueue();const i=Number(id);if(Number.isInteger(i)&&ops[i]&&confirm('Excluir permanentemente esta operação pendente?')){ops.splice(i,1);localStorage.setItem(queueKey(),JSON.stringify(ops));render()}break}
- case'dispatch-integrations':await v51Dispatch();break;
+ case'dispatch-integrations':await v51Dispatch();break;case'reset-open':if(!state.admin)return;state.tab='resetApp';render();await amoResetPreview();break;case'reset-preview':await amoResetPreview();break;case'reset-cancel':amoReset.prepared=null;render();break;
  case'forgot':{if(!db)return notify('Configure o Supabase antes.',true);let email=prompt('Informe seu e-mail para redefinir a senha:');if(email){let {error}=await db.auth.resetPasswordForEmail(email.trim(),{redirectTo:location.origin+location.pathname});if(error)err(error);else notify('Se a conta existir, as instruções chegarão por e-mail.')}break}}});
 window.addEventListener('online',()=>{if(state.user)load()});window.addEventListener('offline',()=>{state.offline=true;$('sync-text').textContent='Offline'});
 
@@ -486,8 +487,12 @@ async function v51Dispatch(){
    const status=error.context?.status;
    throw Error(`Webhook (${status||'sem resposta'}): ${detail}. Confira a Edge Function outbox e seus Secrets.`);
   }
-  notify(`Integrações processadas: ${data?.sent||0} enviadas, ${data?.failed||0} falhas.`);
-  await v51Load();render();
+  await v51Load();
+  if(data?.failed){
+   const last=v51.outbox.find(x=>x.last_error&&(x.state==='pending'||x.state==='error'));
+   notify(`Integrações: ${data.sent||0} enviadas, ${data.failed} falhas. ${last?.last_error||'Consulte a fila no Monitor.'}`,true);
+  }else notify(`Integrações ${data?.destination==='github'?'GitHub':'webhook'}: ${data?.sent||0} evento(s) enviados.`);
+  render();
  }catch(e){err(e)}
 }
 function v51Monitor(){
@@ -497,7 +502,7 @@ function v51Monitor(){
  `<div class="metric-grid">${metric('◉','Conexão',navigator.onLine?'Online':'Offline',v51.channelStatus)}${metric('⇄','Fila local',String(qlist.length),'Aguardando envio')}${metric('!','Erros registrados',String(rows.length),'Últimos 60 registros','amber')}${metric('✓','Último sync',sync,'Consulta concluída')}</div>`+
  `<div class="panel"><h3>Fila offline</h3>${qlist.map((op,i)=>`<div class="mini-row"><span>${esc(op.type==='insert'?'Criar '+op.table:'Status '+op.status)} · ${esc(op.queued_at||'-')}</span><div>${button('Remover','queue-discard',String(i),'btn small danger')}</div></div>`).join('')||'<p class="subtext">Sem operações pendentes.</p>'}<div class="actions">${button('Reenviar pendências','queue-retry','','btn small soft')}</div></div>`+
  `<div class="panel"><h3>Erros do aplicativo</h3>${[...v51.localErrors,...rows].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,40).map(x=>`<div class="mini-row"><span>${esc(x.code||'erro')} · ${esc(x.message)}</span><small>${date(x.created_at)}</small></div>`).join('')||'<p class="subtext">Nenhum erro registrado.</p>'}</div>`+
- (state.admin?`<div class="panel"><h3>Integrações externas</h3><p class="subtext">${v51.outbox.filter(x=>x.state==='pending').length} evento(s) pendentes · ${v51.outbox.filter(x=>x.state==='error').length} erro(s). O webhook deve ser configurado apenas no servidor.</p>${button('Enviar fila de webhooks','dispatch-integrations','','btn small soft')}</div>`:'');
+ (state.admin?`<div class="panel"><h3>Integrações externas</h3><p class="subtext">${v51.outbox.filter(x=>x.state==='pending').length} evento(s) pendentes · ${v51.outbox.filter(x=>x.state==='error').length} erro(s). Destino configurado nos Secrets do Supabase (GitHub Actions ou webhook).</p>${v51.outbox.filter(x=>x.last_error).slice(0,3).map(x=>`<p class="subtext">Falha ${esc(x.kind)}: ${esc(x.last_error)}</p>`).join('')}${button('Enviar fila de webhooks','dispatch-integrations','','btn small soft')}</div>`:'');
 }
 function v51Kpis(){
  const rows=visibleDeliveries(),done=rows.filter(d=>d.status==='Concluída');
@@ -506,6 +511,98 @@ function v51Kpis(){
  const ontime=done.filter(d=>d.scheduled_at&&d.delivered_at),onCount=ontime.filter(d=>new Date(d.delivered_at)<=new Date(d.scheduled_at)).length;
  const reviews=v51.ready?state.ratings:[];
  return `<div class="panel"><h3>Indicadores de desempenho</h3><div class="metric-grid">${metric('◷','Tempo médio',avg===null?'—':avg+' min',durations.length+' fretes com horário')}${metric('✓','Pontualidade',ontime.length?Math.round(onCount/ontime.length*100)+'%':'—','Com prazo e confirmação')}${metric('★','Avaliações',reviews.length? (reviews.reduce((a,r)=>a+Number(r.stars),0)/reviews.length).toFixed(1)+'/5':'—',reviews.length+' avaliações')}${metric('▥','Conversão',rows.length?Math.round(done.length/rows.length*100)+'%':'—','Concluídas / solicitações')}</div></div>`;
+}
+
+// AMO Express 5.1.3 — restauração administrativa. Nenhum dado é apagado ao abrir esta tela.
+const amoReset={preview:null,prepared:null,busy:false,epoch:null};
+function amoClearLocalRecords(){
+ for(let i=localStorage.length-1;i>=0;i--){const key=localStorage.key(i);
+  if(key&&(key.startsWith('amo_cache_')||key.startsWith('amo_queue_')))localStorage.removeItem(key);
+ }
+}
+async function amoEnsureResetEpoch(){
+ if(!db||!state.user||!navigator.onLine)return;
+ const {data,error}=await db.from('amo_reset_state').select('epoch,last_reset_at').eq('id',1).maybeSingle();
+ if(error){
+  // Compatibilidade: a versão web pode ser publicada antes da migração.
+  if(['42P01','PGRST205','PGRST116'].includes(error.code)||/schema cache|does not exist|not found/i.test(error.message||''))return;
+  throw Error('Não foi possível verificar a versão dos dados. Sincronização suspensa: '+error.message);
+ }
+ if(!data?.epoch)return;
+ const old=localStorage.getItem('amo_reset_epoch');
+ if((old&&old!==data.epoch)||(!old&&data.last_reset_at)){
+  amoClearLocalRecords();v51Reset();state.loadedOnce=false;
+  notify('O servidor foi restaurado. Dados e pendências locais antigos foram descartados.');
+ }
+ localStorage.setItem('amo_reset_epoch',data.epoch);
+}
+async function amoResetCall(action,values={}){
+ if(!db||!state.admin)throw Error('Apenas administradores podem acessar esta operação.');
+ if(!navigator.onLine)throw Error('É necessária conexão com o servidor.');
+ if(!(await requireAuthenticatedSession(state.user?.id)))throw Error('Sessão inválida.');
+ const {data,error}=await db.functions.invoke('reset-app',{body:{action,...values}});
+ if(error){let message=error.message||'Erro na Edge Function';
+  try{const context=error.context;if(context?.json){const j=await context.json();message=j.detail?j.error+': '+j.detail:j.error||message}}catch(_){/* resposta não JSON */}
+  throw Error(message);
+ }
+ if(data?.error)throw Error(data.error);
+ return data;
+}
+function amoResetView(){
+ if(!state.admin)return label('Acesso negado','Disponível somente para a administração.');
+ const info=amoReset.preview,counts=info?.counts||{},entries=Object.entries(counts);
+ const names={companies:'Empresas',company_members:'Vínculos de empresas',clients:'Clientes',products:'Produtos',drivers:'Entregadores',deliveries:'Fretes',delivery_events:'Histórico de entregas',delivery_stops:'Paradas',financial_settlements:'Fechamentos',financial_settlement_items:'Itens financeiros',integration_outbox:'Fila de webhooks',notifications:'Notificações',amo_audit_log:'Auditoria',app_admins:'Administradores',neighborhood_rates:'Tarifas',logistics_settings:'Configuração logística',tracking_tokens:'Links de rastreamento',driver_locations:'Localizações',delivery_ratings:'Avaliações',automation_runs:'Automações',client_error_events:'Erros',auth_users_preserved:'Contas Auth (separadas)',storage_proofs_preserved:'Arquivos Storage (separados)'};
+ const sum=entries.filter(([k])=>!k.endsWith('_preserved')).reduce((a,[,v])=>a+Number(v||0),0);
+ const preview=info?`<div class="metric-grid">${metric('▥','Registros do app',sum,'Inclui cadastros e histórico')}${metric('♙','Contas Auth',counts.auth_users_preserved||0,'Não excluídas automaticamente')}${metric('▣','Arquivos Storage',counts.storage_proofs_preserved||0,'Não excluídos automaticamente')}</div><div class="reset-count-grid">${entries.map(([k,v])=>`<div class="mini-row"><span>${esc(names[k]||k)}</span><strong>${esc(v)}</strong></div>`).join('')}</div><p class="subtext">Identificador da versão: ${esc(info.epoch||'-')} · Última restauração: ${info.last_reset_at?date(info.last_reset_at):'Nunca'}</p>`:'<div class="notice">Carregue a prévia para consultar os dados que seriam removidos.</div>';
+ const stage=amoReset.prepared?`<div class="panel reset-danger"><h3>Etapa 2 · Confirmação irreversível</h3><p>Desafio válido por 5 minutos. A senha já foi validada no servidor. Digite exatamente a frase indicada e confirme novamente.</p><form id="amo-reset-confirm" class="form-stack"><label class="field">Digite APAGAR TODOS OS DADOS<input name="phrase" type="text" autocomplete="off" required placeholder="APAGAR TODOS OS DADOS"></label><label class="reset-check"><input name="final_ack" type="checkbox" required> Entendo que os registros serão apagados do banco e que os backups serão necessários para recuperá-los.</label><div class="actions"><button class="btn danger" type="submit">Executar restauração completa</button>${button('Cancelar desafio','reset-cancel','','btn small subtle')}</div></form></div>`:
+ `<div class="panel"><h3>Etapa 1 · Comprovar backup e revalidar senha</h3><p class="subtext">Selecione os arquivos já exportados e testados. O aplicativo calcula SHA-256 localmente, sem enviar seus backups ao servidor. A existência e a possibilidade de restauração precisam ser conferidas por você.</p><form id="amo-reset-prepare" class="form-stack"><label class="field">Backup do banco (.dump, .backup, .sql ou .zip)<input type="file" name="db_backup" accept=".dump,.backup,.sql,.zip" required></label><label class="field">Backup dos arquivos Storage (.zip, .tar ou .tgz)<input type="file" name="storage_backup" accept=".zip,.tar,.tgz" required></label><label class="reset-check"><input type="checkbox" name="backup_ack" required> Conferi os dois arquivos, seus conteúdos e um procedimento de restauração em ambiente separado.</label><label class="field">Senha atual do administrador<input type="password" name="password" autocomplete="current-password" minlength="8" required></label><button type="submit" class="btn danger" ${!info?.enabled?'disabled title="Ative AMO_RESET_ENABLED no Supabase"':''}>Verificar arquivos e preparar restauração</button></form>${info&&!info.enabled?'<div class="notice">Operação bloqueada pelo servidor. Configure AMO_RESET_ENABLED=true e AMO_RESET_PROJECT_REF somente quando estiver pronto.</div>':''}</div>`;
+ return label('Restauração completa','Zona de perigo · Exclusão controlada de cadastros e dados operacionais.')+
+ `<div class="panel reset-danger"><h3>⚠ Esta operação não pode ser desfeita sem backup</h3><p>O banco perderá fretes, empresas, clientes, produtos, entregadores, tarifas, finanças, auditoria e eventos. Apenas a conta administradora que executou a restauração permanecerá vinculada. Contas de login (Auth) e arquivos do Storage são tratados separadamente.</p><div class="actions">${button('Atualizar prévia','reset-preview','','btn small soft')}${button('Voltar às configurações','tab','settings','btn small subtle')}</div></div>`+
+ preview+stage+
+ `<div class="panel"><h3>Etapas separadas após a restauração</h3><p class="subtext"><strong>Storage:</strong> exporte e valide todos os comprovantes do bucket <code>delivery-proofs</code> antes de apagá-los pela API ou Dashboard. A restauração do banco não remove objetos físicos.</p><p class="subtext"><strong>Auth:</strong> contas em Authentication → Users não são excluídas. Revise-as individualmente, preserve a conta administrativa e remova apenas as que pertencem exclusivamente ao AMO Express.</p><p class="subtext"><strong>Dispositivos:</strong> abra a nova versão em todos os celulares; o app detecta a mudança de versão e descarta filas offline anteriores.</p></div>`;
+}
+async function amoResetPreview(){
+ if(!state.admin)return;
+ try{amoReset.prepared=null;amoReset.preview=await amoResetCall('preview');if(state.tab==='resetApp')render();}
+ catch(e){err(e);amoReset.preview=null;if(state.tab==='resetApp')render()}
+}
+async function amoFileEvidence(file,kind){
+ if(!file||file.size<100)throw Error('Selecione um arquivo de backup real para '+kind+'.');
+ if(file.size>256*1024*1024)throw Error('Arquivo maior que 256 MB. Use um computador com memória suficiente ou faça o procedimento assistido por CLI.');
+ const ext=kind==='db'?/\.(dump|backup|sql|zip)$/i:/\.(zip|tar|tgz)$/i;
+ if(!ext.test(file.name))throw Error('Formato de arquivo inesperado: '+file.name);
+ if(!window.crypto?.subtle)throw Error('O cálculo SHA-256 requer HTTPS.');
+ const bytes=await file.arrayBuffer();const hash=await crypto.subtle.digest('SHA-256',bytes);
+ const sha256=Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('');
+ return {name:file.name.slice(0,120),bytes:file.size,sha256};
+}
+async function amoResetPrepare(form){
+ if(amoReset.busy||!state.admin||!amoReset.preview?.enabled)return;
+ const button=form.querySelector('button[type=submit]');amoReset.busy=true;button.disabled=true;button.textContent='Validando arquivos e senha…';
+ try{
+  const dbFile=form.elements.db_backup.files[0],storageFile=form.elements.storage_backup.files[0];
+  if(!form.elements.backup_ack.checked)throw Error('Confirme que os backups foram testados.');
+  const evidence={db:await amoFileEvidence(dbFile,'db'),storage:await amoFileEvidence(storageFile,'storage'),acknowledged:true};
+  const password=form.elements.password.value;
+  const response=await amoResetCall('prepare',{password,evidence});
+  amoReset.prepared={request_id:response.request_id,nonce:response.nonce,expected_counts:response.expected_counts,created_at:Date.now()};
+  form.reset();render();notify('Backup registrado e senha confirmada. Confira a etapa final.');
+ }catch(e){err(e)}finally{amoReset.busy=false;button.disabled=false;button.textContent='Verificar arquivos e preparar restauração'}
+}
+async function amoResetExecute(form){
+ if(amoReset.busy||!state.admin||!amoReset.prepared)return;
+ const challenge=amoReset.prepared;
+ if(Date.now()-challenge.created_at>300000){amoReset.prepared=null;render();return notify('Desafio expirado. Recomece.',true)}
+ if(form.elements.phrase.value!=='APAGAR TODOS OS DADOS'||!form.elements.final_ack.checked)return notify('Confirmação incompleta.',true);
+ if(!confirm('ÚLTIMA CONFIRMAÇÃO: apagar permanentemente todos os registros do AMO Express no Supabase? Os arquivos Storage e contas Auth permanecerão até limpeza separada.'))return;
+ const button=form.querySelector('button[type=submit]');amoReset.busy=true;button.disabled=true;button.textContent='Executando no servidor…';
+ try{
+  const result=await amoResetCall('execute',{request_id:challenge.request_id,nonce:challenge.nonce,expected_counts:challenge.expected_counts,phrase:form.elements.phrase.value});
+  if(!result?.ok)throw Error('O servidor não confirmou a restauração. Consulte o registro de operações.');
+  amoClearLocalRecords();localStorage.setItem('amo_reset_epoch',result.epoch);
+  v51Reset();state.loadedOnce=false;state.companyId=null;state.tab='home';amoReset.prepared=null;amoReset.preview=null;
+  await load();notify('Restauração concluída. Contas Auth e Storage permanecem para procedimento separado.');
+ }catch(e){err(e);amoReset.prepared=null;render()}finally{amoReset.busy=false;button.disabled=false;button.textContent='Executar restauração completa'}
 }
 
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update().catch(console.warn)).catch(console.warn);

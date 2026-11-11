@@ -1,5 +1,5 @@
-/* AMO Express 5.1.1 — atualizações sem cache obsoleto */
-const CACHE='amo-express-shell-v5-1-1';
+/* AMO Express 5.1.3 — atualizações sem cache obsoleto */
+const CACHE='amo-express-shell-v5-1-3';
 const SHELL=['./index.html','./tracking.html','./tracking.js','./styles.css','./app.js','./config.js','./manifest.webmanifest'];
 const ASSETS=['./icons/icon-192.png','./icons/icon-512.png'];
 const SUPA='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js';
