@@ -52,3 +52,22 @@
 .panel .btn+.btn{margin-left:8px;margin-top:8px}
 .tile-details .tile-actions{flex-wrap:wrap}
 @media(max-width:430px){.panel .btn{max-width:100%}.tile-actions{gap:6px}}
+
+/* AMO Express 5.1 | aprimoramentos sem substituir o tema original */
+.qr-wrap{display:flex;justify-content:center;align-items:center;margin:18px auto;padding:12px;background:#fff;border-radius:18px;min-height:236px;max-width:300px}
+.track-footer{padding:15px 24px;text-align:center;color:#7a889b;font-size:12px}
+.public-tracking .main-content{padding-top:38px;max-width:750px;margin:0 auto;width:100%}
+.public-tracking .panel{margin-top:24px;padding:24px}
+.track-heading{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:19px}
+.track-heading .badge{margin-left:auto}
+.track-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:27px 0;gap:5px}
+.track-step{text-align:center;position:relative;color:#7f8b9b;font-size:11px;line-height:1.35}
+.track-step span{margin:0 auto 8px;width:32px;height:32px;display:grid;place-items:center;background:#e9eff8;color:#69788e;border-radius:50%;font-weight:700}
+.track-step.done span{background:#dcfce7;color:#167e46}
+.track-step.done strong{color:#167e46}
+.track-step strong{display:block;overflow-wrap:anywhere}
+.track-error{text-align:center;padding:22px 0}
+.stack-small{display:block;font-size:12px;line-height:1.5;color:#5e6a7c;margin-top:2px}
+.actions.compact{display:flex;gap:5px;flex-wrap:wrap;justify-content:end}
+.public-tracking .topbar{justify-content:flex-start}
+@media(max-width:420px){.track-steps{gap:2px}.track-step{font-size:10px}.track-step span{width:28px;height:28px}}

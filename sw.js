@@ -1,8 +1,9 @@
-/* AMO Express 5.0.1 — atualizações sem cache obsoleto */
-const CACHE='amo-express-shell-v5-0-1';
-const SHELL=['./index.html','./styles.css','./app.js','./config.js','./manifest.webmanifest'];
+/* AMO Express 5.1.0 — atualizações sem cache obsoleto */
+const CACHE='amo-express-shell-v5-1-0';
+const SHELL=['./index.html','./tracking.html','./tracking.js','./styles.css','./app.js','./config.js','./manifest.webmanifest'];
 const ASSETS=['./icons/icon-192.png','./icons/icon-512.png'];
 const SUPA='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js';
+const QR='https://cdn.jsdelivr.net/npm/qrcode@1.5.4/lib/browser.min.js';
 const scopedPath=path=>new URL(path,self.registration.scope).pathname;
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
@@ -36,7 +37,7 @@ self.addEventListener('fetch',event=>{
   const url=new URL(event.request.url);
   if(url.origin===self.location.origin){
     if(event.request.mode==='navigate'){
-      event.respondWith(networkFirst(event.request,'./index.html'));
+      event.respondWith(networkFirst(event.request,url.pathname.endsWith('/tracking.html')?'./tracking.html':'./index.html'));
       return;
     }
     if(SHELL.some(path=>scopedPath(path)===url.pathname)){
@@ -49,7 +50,7 @@ self.addEventListener('fetch',event=>{
     return;
   }
   // O SDK é externo: manter cache para funcionamento offline, mas nunca interceptar Supabase Auth/API.
-  if(event.request.url===SUPA){
+  if(event.request.url===SUPA||event.request.url===QR){
     event.respondWith(networkFirst(event.request));
   }
 });
